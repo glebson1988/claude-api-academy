@@ -1,10 +1,4 @@
-from anthropic import Anthropic
-from dotenv import load_dotenv
-
-load_dotenv()
-
-client = Anthropic()
-model = "claude-haiku-4-5"
+from helpers import client, model
 
 message = client.messages.create(
     model=model,
