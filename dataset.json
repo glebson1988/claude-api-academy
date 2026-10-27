@@ -1,0 +1,11 @@
+[
+  {
+    "task": "Write a Python function that extracts the AWS account ID from an ARN string"
+  },
+  {
+    "task": "Create a JSON object that represents an AWS IAM policy allowing read-only access to S3 bucket objects"
+  },
+  {
+    "task": "Write a regex pattern that validates AWS S3 bucket names according to the naming rules (3-63 characters, lowercase letters, numbers, hyphens, no consecutive hyphens, cannot start/end with hyphen)"
+  }
+]
