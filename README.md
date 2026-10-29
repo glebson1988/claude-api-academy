@@ -84,6 +84,8 @@ The project: Claude sets reminders with three tools: current time, date arithmet
 |---|---|
 | [`01_tool_functions`](./04_tool_use/01_tool_functions.ipynb) | A tool is a plain function: `get_current_datetime`, input validation, error text |
 | [`02_tool_schemas`](./04_tool_use/02_tool_schemas.ipynb) | JSON schema for the tool, Claude writes one, first request with `tools=[...]` |
+| [`03_handling_message_blocks`](./04_tool_use/03_handling_message_blocks.ipynb) | `text` + `tool_use` blocks, keeping them in history, helpers that return the whole `Message` |
+| [`04_sending_tool_results`](./04_tool_use/04_sending_tool_results.ipynb) | Full round trip by hand: run the function, send `tool_result`, get the answer |
 
 ## Cheat sheet
 
@@ -237,6 +239,25 @@ response = client.messages.create(..., tools=[get_current_datetime_schema])
 
 Let Claude write schemas: paste the function and ask for "a valid JSON schema spec for the
 purposes of tool calling".
+
+- **`response.content` is a list of blocks**: `text` (optional) and `tool_use` (`id`, `name`, `input`).
+- **Keep every block in history**: `{"role": "assistant", "content": response.content}`, not just the text.
+- **Helpers change**: `chat()` takes `tools` and returns the whole `Message`
+  (you need `stop_reason` and the blocks); `text_from_message()` pulls the text out.
+
+```python
+tool_use = next(b for b in response.content if b.type == "tool_use")   # not content[0] / [1]
+result = get_current_datetime(**tool_use.input)                        # input is a dict of kwargs
+add_user_message(messages, [{
+    "type": "tool_result",
+    "tool_use_id": tool_use.id,   # which request this answers
+    "content": result,            # a string
+    "is_error": False,
+}])
+response = chat(messages, tools=[...])  # still send the tools: the history refers to them
+```
+
+History of one round trip: user question → assistant `tool_use` → user `tool_result` → assistant text.
 
 ## Results so far
 
