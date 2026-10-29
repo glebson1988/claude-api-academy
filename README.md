@@ -86,6 +86,9 @@ The project: Claude sets reminders with three tools: current time, date arithmet
 | [`02_tool_schemas`](./04_tool_use/02_tool_schemas.ipynb) | JSON schema for the tool, Claude writes one, first request with `tools=[...]` |
 | [`03_handling_message_blocks`](./04_tool_use/03_handling_message_blocks.ipynb) | `text` + `tool_use` blocks, keeping them in history, helpers that return the whole `Message` |
 | [`04_sending_tool_results`](./04_tool_use/04_sending_tool_results.ipynb) | Full round trip by hand: run the function, send `tool_result`, get the answer |
+| [`05_multi_turn_conversations_with_tools`](./04_tool_use/05_multi_turn_conversations_with_tools.ipynb) | "103 days from today": two tools in a row, rounds run one by one |
+
+Tool functions and schemas: [`tools.py`](./04_tool_use/tools.py).
 
 ## Cheat sheet
 
@@ -259,6 +262,10 @@ response = chat(messages, tools=[...])  # still send the tools: the history refe
 
 History of one round trip: user question → assistant `tool_use` → user `tool_result` → assistant text.
 
+**Several tools in a row**: Claude asks for the next tool only after it sees the previous result
+("today's date" → "add 103 days"). The number of rounds is unknown, so the code loops:
+call Claude → if `stop_reason == "tool_use"`, run the tools and send the results → repeat.
+
 ## Results so far
 
 | Notebook | Prompt | Average score |
@@ -289,6 +296,10 @@ output moves the average by about 1 point.
   `max_tokens` is 2000 instead of 1000, so long meal plans are not cut off.
 - **`get_current_datetime_schema`**: the lesson's description is one sentence; here it has the
   3-4 sentences the lesson recommends.
+- **`tools.py`**: the course pastes its ready-made tools into every notebook; here they live in one
+  module, with `ToolParam` around each schema.
+- **The `tool_use` block is found by type**, not by `response.content[0]` / `[1]` as in the lessons:
+  its position depends on whether Claude wrote text first.
 - **Datasets are frozen**: generation cells only write `dataset.json` if it does not exist.
   All module 3 notebooks use the same dataset, so their scores can be compared.
 - **The example in `03/05`** is for an athlete outside the dataset (the course uses a profile that
