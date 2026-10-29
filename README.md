@@ -87,6 +87,7 @@ The project: Claude sets reminders with three tools: current time, date arithmet
 | [`03_handling_message_blocks`](./04_tool_use/03_handling_message_blocks.ipynb) | `text` + `tool_use` blocks, keeping them in history, helpers that return the whole `Message` |
 | [`04_sending_tool_results`](./04_tool_use/04_sending_tool_results.ipynb) | Full round trip by hand: run the function, send `tool_result`, get the answer |
 | [`05_multi_turn_conversations_with_tools`](./04_tool_use/05_multi_turn_conversations_with_tools.ipynb) | "103 days from today": two tools in a row, rounds run one by one |
+| [`06_implementing_multiple_turns`](./04_tool_use/06_implementing_multiple_turns.ipynb) | The loop: `run_conversation`, `run_tools`, `run_tool`; parallel calls, a chain, an error and a retry |
 
 Tool functions and schemas: [`tools.py`](./04_tool_use/tools.py).
 
@@ -265,6 +266,25 @@ History of one round trip: user question → assistant `tool_use` → user `tool
 **Several tools in a row**: Claude asks for the next tool only after it sees the previous result
 ("today's date" → "add 103 days"). The number of rounds is unknown, so the code loops:
 call Claude → if `stop_reason == "tool_use"`, run the tools and send the results → repeat.
+
+```python
+def run_conversation(messages):
+    while True:
+        response = chat(messages, tools=tools)
+        add_assistant_message(messages, response)
+        if response.stop_reason != "tool_use":
+            break
+        add_user_message(messages, run_tools(response))   # one tool_result per tool_use block
+    return messages
+```
+
+- **`run_tools`**: a reply can hold several `tool_use` blocks (independent values are asked for at once).
+  Output goes in as `json.dumps(output)`.
+- **Errors**: catch any exception and send `"Error: ..."` with `is_error: True`. Claude reads it and
+  retries, e.g. with the right `input_format`.
+- **`run_tool`**: name → function routing; a new tool is one more branch, the loop does not change.
+- **Good schema descriptions prevent errors**: asked for "fortnights", Claude read the list of units
+  and called with 6 weeks instead.
 
 ## Results so far
 
