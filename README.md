@@ -83,6 +83,7 @@ The project: Claude sets reminders with three tools: current time, date arithmet
 | Notebook | What it shows |
 |---|---|
 | [`01_tool_functions`](./04_tool_use/01_tool_functions.ipynb) | A tool is a plain function: `get_current_datetime`, input validation, error text |
+| [`02_tool_schemas`](./04_tool_use/02_tool_schemas.ipynb) | JSON schema for the tool, Claude writes one, first request with `tools=[...]` |
 
 ## Cheat sheet
 
@@ -218,6 +219,25 @@ and sends the result back. That is two API calls per tool round trip.
 Tool functions: descriptive names, validate inputs, raise errors with clear messages
 (Claude reads them and can retry with fixed arguments).
 
+```python
+get_current_datetime_schema = ToolParam({              # ToolParam: type checking only
+    "name": "get_current_datetime",
+    "description": "What it does. When to use it. What it returns.",   # 3-4 sentences
+    "input_schema": {                                  # JSON Schema of the arguments
+        "type": "object",
+        "properties": {
+            "date_format": {"type": "string", "description": "...", "default": "%Y-%m-%d %H:%M:%S"},
+        },
+        "required": [],
+    },
+})
+response = client.messages.create(..., tools=[get_current_datetime_schema])
+# response.stop_reason == "tool_use", response.content has a tool_use block: name + input
+```
+
+Let Claude write schemas: paste the function and ask for "a valid JSON schema spec for the
+purposes of tool calling".
+
 ## Results so far
 
 | Notebook | Prompt | Average score |
@@ -246,6 +266,8 @@ output moves the average by about 1 point.
 - **`PromptEvaluator`** is the course class from `001_prompting.ipynb`, moved into a module.
   Small fixes: numeric prompt inputs no longer crash grading, the HTML report escapes model output.
   `max_tokens` is 2000 instead of 1000, so long meal plans are not cut off.
+- **`get_current_datetime_schema`**: the lesson's description is one sentence; here it has the
+  3-4 sentences the lesson recommends.
 - **Datasets are frozen**: generation cells only write `dataset.json` if it does not exist.
   All module 3 notebooks use the same dataset, so their scores can be compared.
 - **The example in `03/05`** is for an athlete outside the dataset (the course uses a profile that
