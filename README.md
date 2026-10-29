@@ -74,6 +74,16 @@ The prompt under test writes a one-day meal plan for an athlete.
 
 Each notebook changes one thing in the previous prompt and is graded on the same `dataset.json`.
 
+### Module 4: Tool use with Claude
+
+📁 [`04_tool_use/`](./04_tool_use/)
+
+The project: Claude sets reminders with three tools: current time, date arithmetic, set a reminder.
+
+| Notebook | What it shows |
+|---|---|
+| [`01_tool_functions`](./04_tool_use/01_tool_functions.ipynb) | A tool is a plain function: `get_current_datetime`, input validation, error text |
+
 ## Cheat sheet
 
 ### Requests
@@ -194,6 +204,19 @@ This example is ideal because ...
 - **A plateau means hidden criteria**: around 7 the points are lost on test-case rules the prompt never
   mentions ("exactly 4 meals", "30 g protein per meal", "3,500-4,000 kcal"). No wording technique fixes
   that; either the prompt gets those inputs, or the criteria are too strict.
+
+### Tool use
+
+Claude never runs anything: it asks for a tool by name with arguments, your code runs it
+and sends the result back. That is two API calls per tool round trip.
+
+1. Your request: user question + tool descriptions
+2. Claude replies with a tool request (name + arguments) instead of an answer
+3. Your code runs the function
+4. You send the result back, Claude writes the final answer
+
+Tool functions: descriptive names, validate inputs, raise errors with clear messages
+(Claude reads them and can retry with fixed arguments).
 
 ## Results so far
 
