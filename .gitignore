@@ -1,3 +1,8 @@
 .env
 __pycache__/
 .ruff_cache/
+.ipynb_checkpoints/
+
+# Eval reports are regenerated on every run
+output.json
+output.html
