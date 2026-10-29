@@ -18,6 +18,7 @@ Example output:
 [
   {
     "task": "Description of task",
+    "format": "python" or "json" or "regex"
   },
   ...additional
 ]
