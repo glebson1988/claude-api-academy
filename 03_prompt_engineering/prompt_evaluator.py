@@ -4,6 +4,7 @@ PromptEvaluator from the course notebook "Prompt engineering" (001_prompting.ipy
 Generates a test dataset, runs a prompt against it, grades every output with a model
 and writes output.json plus an HTML report. Changes against the course version:
 - chat() joins all text blocks and only sends stop_sequences when set
+- max_tokens is 2000 instead of 1000: longer meal plans were cut off before dinner
 - prompt input values may be numbers, not only strings
 - the HTML report escapes model output
 """
@@ -29,10 +30,10 @@ def add_messages(messages, text, role="user"):
     message = {"role": role, "content": text}
     messages.append(message)
 
-def chat(messages, system=None, temperature=1.0, stop_sequences=None):
+def chat(messages, system=None, temperature=1.0, stop_sequences=None, max_tokens=2000):
     params = {
         "model": model,
-        "max_tokens": 1000,
+        "max_tokens": max_tokens,
         "messages": messages,
         "temperature": temperature,
     }

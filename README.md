@@ -67,6 +67,12 @@ The prompt under test writes a one-day meal plan for an athlete.
 | Notebook | What it shows |
 |---|---|
 | [`01_prompt_engineering`](./03_prompt_engineering/01_prompt_engineering.ipynb) | The improve-and-measure loop, `PromptEvaluator`, a naive baseline prompt |
+| [`02_being_clear_and_direct`](./03_prompt_engineering/02_being_clear_and_direct.ipynb) | First line as a direct instruction with an action verb |
+| [`03_being_specific`](./03_prompt_engineering/03_being_specific.ipynb) | Output guidelines vs process steps; adds guidelines |
+| [`04_structure_with_xml_tags`](./03_prompt_engineering/04_structure_with_xml_tags.ipynb) | Wraps the athlete data in `<athlete_information>` |
+| [`05_providing_examples`](./03_prompt_engineering/05_providing_examples.ipynb) | One-shot: `<sample_input>` + `<ideal_output>` + why it is ideal |
+
+Each notebook changes one thing in the previous prompt and is graded on the same `dataset.json`.
 
 ## Cheat sheet
 
@@ -154,15 +160,58 @@ evaluator.run_evaluation(run_prompt_function=run_prompt, dataset_file="dataset.j
 `extra_criteria` are mandatory: missing one caps the score at 3. Results go to `output.json` and
 `output.html` (git-ignored). A low first score is normal; it is the baseline to beat.
 
+| Technique | How | Use when |
+|---|---|---|
+| Clear and direct | Open with an instruction and an action verb, not a question | Always |
+| Specific: guidelines | List the qualities of a good output (length, parts, format) | Almost every prompt |
+| Specific: steps | Tell Claude how to work through the problem | Complex reasoning, decisions |
+| XML tags | Wrap data in descriptive tags: `<athlete_information>...</athlete_information>` | Long context, mixed content, many variables |
+| Examples | `<sample_input>` + `<ideal_output>` + a line on why it is ideal | Corner cases, exact format or tone, ambiguous inputs |
+
+```text
+Generate a one-day meal plan for an athlete that meets their dietary restrictions.   <- clear and direct
+
+<athlete_information>                                                                 <- XML tags
+- Height: ...
+</athlete_information>
+
+Guidelines:                                                                           <- being specific
+1. Include accurate daily calorie amount
+...
+
+Here is an example with a sample input and an ideal output:                           <- examples
+<sample_input>...</sample_input>
+<ideal_output>...</ideal_output>
+This example is ideal because ...
+```
+
+- **Take examples from your own eval**: a top-scoring output. Use an input that is not in the
+  dataset, otherwise the example leaks the answer.
+- **Examples get copied**, structure included: the example has 6 meals, so outputs had 6 meals
+  too and lost points on a test case that asked for exactly 4.
+- **Check `stop_reason`**: with `max_tokens=1000` most meal plans were cut off before the end, and a
+  missing dinner cost more than any prompt technique gained. Raised to 2000 in `prompt_evaluator.py`.
+- **A plateau means hidden criteria**: around 7 the points are lost on test-case rules the prompt never
+  mentions ("exactly 4 meals", "30 g protein per meal", "3,500-4,000 kcal"). No wording technique fixes
+  that; either the prompt gets those inputs, or the criteria are too strict.
+
 ## Results so far
 
 | Notebook | Prompt | Average score |
 |---|---|---|
 | `02/03_model_based_grading` | "Please solve the following task" | 7.33 |
 | `02/04_code_based_grading` | + "only code, no commentary", ` ```code ` prefill | 7.83 |
-| `03/01_prompt_engineering` | "What should this person eat?" (baseline) | 2.0 |
+| `03/01_prompt_engineering` | "What should this person eat?" (baseline) | 2.33 |
+| `03/02_being_clear_and_direct` | "Generate a one-day meal plan..." | 7.0 |
+| `03/03_being_specific` | + guidelines | 8.0 |
+| `03/04_structure_with_xml_tags` | + `<athlete_information>` | 7.33 |
+| `03/05_providing_examples` | + one example | 7.67 |
 
-Scores move a little between runs: the outputs and the model grader are not deterministic.
+Module 3 runs use `max_tokens=2000`. The course reports 2.32 → 3.92 → 7.86 for the first three steps.
+Here the big jump comes from the first line alone; after that the scores sit between 7 and 8 and
+their order changes from run to run (see "A plateau means hidden criteria" above). Scores move
+between runs: the outputs and the model grader are not deterministic, and with 3 test cases one
+output moves the average by about 1 point.
 
 ## Differences from the course code
 
@@ -173,7 +222,12 @@ Scores move a little between runs: the outputs and the model grader are not dete
 - **`grade_syntax`** is called on the lesson page but not shown; it is taken from the course notebook.
 - **`PromptEvaluator`** is the course class from `001_prompting.ipynb`, moved into a module.
   Small fixes: numeric prompt inputs no longer crash grading, the HTML report escapes model output.
+  `max_tokens` is 2000 instead of 1000, so long meal plans are not cut off.
 - **Datasets are frozen**: generation cells only write `dataset.json` if it does not exist.
+  All module 3 notebooks use the same dataset, so their scores can be compared.
+- **The example in `03/05`** is for an athlete outside the dataset (the course uses a profile that
+  matches a test case). It was generated by the `03/04` prompt, scored 9, and two slips were fixed by hand.
+- **Each module 3 notebook writes its own report** (`output_02.json`, `output_02.html`, ...).
 
 ## Credits
 
