@@ -105,8 +105,9 @@ The document: the course's [`report.md`](./05_rag/report.md), an annual report o
 |---|---|
 | [`01_text_chunking_strategies`](./05_rag/01_text_chunking_strategies.ipynb) | Chunking by size, sentence and section on one report; which chunks mix two sections |
 | [`02_text_embeddings`](./05_rag/02_text_embeddings.ipynb) | `generate_embedding` with Voyage through OpenRouter; a question scored against three sections |
+| [`03_implementing_the_rag_flow`](./05_rag/03_implementing_the_rag_flow.ipynb) | The five steps with `VectorIndex`, `query` vs `document` embeddings, plus Claude's answer from the found chunks |
 
-Chunking: [`chunking.py`](./05_rag/chunking.py). Embeddings: [`embeddings.py`](./05_rag/embeddings.py).
+Chunking: [`chunking.py`](./05_rag/chunking.py). Embeddings: [`embeddings.py`](./05_rag/embeddings.py). Vector store: [`vector_index.py`](./05_rag/vector_index.py).
 
 ## Cheat sheet
 
@@ -355,6 +356,26 @@ generate_embedding(chunks, input_type="document")                            # a
 - The question about bugs scored 0.333 against the software section and about 0.1 against the
   medical and security ones, though none of them contains the word "bug". The ranking matters, not the value.
 
+**The RAG flow**:
+
+```python
+chunks = chunk_by_section(text)                                   # 1. chunk
+embeddings = generate_embedding(chunks, input_type="document")    # 2. embed (one request)
+store = VectorIndex()                                             # 3. store
+for embedding, chunk in zip(embeddings, chunks):
+    store.add_vector(embedding, {"content": chunk})
+query = generate_embedding(question, input_type="query")          # 4. embed the question
+results = store.search(query, k=2)                                # 5. [(doc, distance), ...], closest first
+# 6. put the found chunks into the prompt in XML tags, ask Claude to answer only from them
+```
+
+- Cosine **distance** = 1 - similarity: smaller is closer.
+- Summaries win searches: "What did the software engineering dept do?" ranked the Executive Summary
+  above the software section, which was only second. With `k=1` the answer would miss it.
+- `"document"` for the chunks separates relevant from irrelevant better: third place at 0.741 against
+  0.648, while with `"query"` the top three were within 0.02.
+- 2 chunks in the prompt: 731 input tokens instead of the whole report (about 4600).
+
 ## Results so far
 
 | Notebook | Prompt | Average score |
@@ -401,6 +422,10 @@ output moves the average by about 1 point.
   splits on `\n## ` and drops it). Both overlap functions raise `ValueError` when the overlap is not
   smaller than the chunk (the course loops forever). `chunk_by_sentence` stops after the chunk that
   reaches the end (the course can add one more chunk made only of overlap sentences).
+- **`VectorIndex`** is the course class, shorter: no type checks on every number, `math.dist` and
+  `math.hypot` for the distances. Same interface (`add_vector`, `add_document`, `search`).
+- **The RAG flow notebook** embeds chunks with `input_type="document"` (the course uses `"query"`
+  for both) and adds step 6, Claude's answer from the found chunks, which this lesson leaves out.
 - **Embeddings** go through OpenRouter (`httpx` POST to `/v1/embeddings`, the key from `.env`) instead
   of the `voyageai` package and a separate `VOYAGE_API_KEY`. The model is `voyage-4-large`
   (`voyage-3-large` is not on OpenRouter). `generate_embedding` takes a text or a list already;
