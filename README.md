@@ -118,6 +118,7 @@ Chunking: [`chunking.py`](./05_rag/chunking.py). Embeddings: [`embeddings.py`](.
 | Notebook | What it shows |
 |---|---|
 | [`01_extended_thinking`](./06_features_of_claude/01_extended_thinking.ipynb) | `thinking` + `text` blocks, cost, where the signature is checked, redacted thinking, limits through OpenRouter |
+| [`02_image_support`](./06_features_of_claude/02_image_support.ipynb) | Image blocks, what an image costs in tokens, fire risk from satellite images: bare question vs step-by-step prompt |
 
 ## Cheat sheet
 
@@ -430,6 +431,21 @@ params["thinking"] = {"type": "enabled", "budget_tokens": 1024}  # 1024 is the m
   block, no error); a budget below 1024 or `max_tokens` below the budget pass too. Check the blocks you get back.
 - Turn it on only after prompt work and evals stop improving accuracy.
 
+### Images
+
+```python
+{"type": "image", "source": {"type": "base64", "media_type": "image/png",
+                             "data": base64.standard_b64encode(path.read_bytes()).decode()}}
+```
+
+- Image and text blocks go together in one user message. Up to 100 images, 5 MB each, base64 or URL.
+- Cost is about `width * height / 750` tokens, but large images are scaled down first: a 1256x1790 image
+  should cost 2997 tokens and cost 1555. Expect at most about 1600 tokens per image.
+- `client.messages.count_tokens` returns 404 through OpenRouter; a `max_tokens=1` request gives `usage.input_tokens`.
+- Fire risk, 7 images x 3 runs: the bare question gave the same rating every run on 5 of 7, but it said 3
+  in 18 of 21 answers. The step-by-step course prompt used the whole scale (4 for the two most overgrown
+  homes, every run) and wavered on the borderline ones. Stable is not the same as right: label images and run an eval.
+
 ## Results so far
 
 | Notebook | Prompt | Average score |
@@ -478,6 +494,8 @@ output moves the average by about 1 point.
   reaches the end (the course can add one more chunk made only of overlap sentences).
 - **`VectorIndex`** is the course class, shorter: no type checks on every number, `math.dist` and
   `math.hypot` for the distances. Same interface (`add_vector`, `add_document`, `search`).
+- **Image support**: the satellite images are the course's (`images/prop1-7.png`). The fire risk prompt
+  gets one extra line, `RATING: N`, to read the number off; both prompts run 3 times on every image.
 - **Extended thinking**: the course `chat` as is (with `stop_sequences=None`). Added: the cost comparison,
   the signature check in a tool loop, and what OpenRouter does with prefill and thinking.
 - **`BM25Index`** is the course class, shorter (`Counter` for document frequencies, `idf()` public
