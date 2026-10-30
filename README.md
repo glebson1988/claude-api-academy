@@ -94,6 +94,18 @@ The project: Claude sets reminders with three tools: current time, date arithmet
 Tool functions and schemas: [`tools.py`](./04_tool_use/tools.py), [`text_editor.py`](./04_tool_use/text_editor.py).
 Fine-grained tool calling (lesson 29) has no notebook: through OpenRouter it made no visible difference.
 
+### Module 5: Retrieval Augmented Generation
+
+📁 [`05_rag/`](./05_rag/)
+
+The document: the course's [`report.md`](./05_rag/report.md), an annual report of a made-up company with one section per department.
+
+| Notebook | What it shows |
+|---|---|
+| [`01_text_chunking_strategies`](./05_rag/01_text_chunking_strategies.ipynb) | Chunking by size, sentence and section on one report; which chunks mix two sections |
+
+Chunking functions: [`chunking.py`](./05_rag/chunking.py).
+
 ## Cheat sheet
 
 ### Requests
@@ -311,6 +323,23 @@ def run_conversation(messages):
 - OpenRouter rejects the stub (`Unknown server-tool shorthand`); a regular tool with the same name and
   commands works the same way.
 
+### RAG
+
+**Chunking**: cut the document so that each chunk holds one topic.
+
+| Strategy | Function | Use when |
+|---|---|---|
+| Size + overlap | `chunk_by_char(text, 150, 20)` | anything, code included; the production fallback |
+| Sentence + overlap | `chunk_by_sentence(text, 5, 1)` | most plain text |
+| Structure | `chunk_by_section(text)` | you control the format (`## ` headers) |
+| Semantic | (no code in the course) | relevance matters more than cost |
+
+- On `report.md` (14 sections): size 150/20 gives 141 chunks, 17 of them mix two sections; sentence 5/1 gives
+  33 and 15; section gives 15 and 0.
+- A header without a period sticks to the next sentence; a size cut separates it from its text.
+- Section chunks are uneven (69 to 2187 characters); long sections can be split again by sentence or size.
+- Overlap must be smaller than the chunk, or the loop never moves on.
+
 ## Results so far
 
 | Notebook | Prompt | Average score |
@@ -353,6 +382,10 @@ output moves the average by about 1 point.
   regular tool. `TextEditorTool` is the course class, shorter: `pathlib`, `is_relative_to` for the path
   check, in-memory backups for `undo_edit` instead of a `.backups` folder. Claude works in a temp folder,
   and the notebook runs the tests Claude wrote.
+- **Chunking**: `chunk_by_section` splits before the header, so each chunk keeps its `## ` (the course
+  splits on `\n## ` and drops it). Both overlap functions raise `ValueError` when the overlap is not
+  smaller than the chunk (the course loops forever). `chunk_by_sentence` stops after the chunk that
+  reaches the end (the course can add one more chunk made only of overlap sentences).
 - **Each module 3 notebook writes its own report** (`output_02.json`, `output_02.html`, ...).
 
 ## Credits
