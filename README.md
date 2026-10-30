@@ -111,6 +111,14 @@ The document: the course's [`report.md`](./05_rag/report.md), an annual report o
 
 Chunking: [`chunking.py`](./05_rag/chunking.py). Embeddings: [`embeddings.py`](./05_rag/embeddings.py). Indexes: [`vector_index.py`](./05_rag/vector_index.py), [`bm25_index.py`](./05_rag/bm25_index.py). Hybrid search: [`retriever.py`](./05_rag/retriever.py).
 
+### Module 6: Features of Claude
+
+📁 [`06_features_of_claude/`](./06_features_of_claude/)
+
+| Notebook | What it shows |
+|---|---|
+| [`01_extended_thinking`](./06_features_of_claude/01_extended_thinking.ipynb) | `thinking` + `text` blocks, cost, where the signature is checked, redacted thinking, limits through OpenRouter |
+
 ## Cheat sheet
 
 ### Requests
@@ -404,6 +412,24 @@ Rank of the right section, 15 chunks:
 - BM25 matches common words (`with`, `the`), which adds noise; a tokenizer without stop words helps
   where the words exist (software question: 3 → 2), not where they don't (hackers).
 
+### Extended thinking
+
+```python
+params["max_tokens"] = thinking_budget + 1000                  # must be larger than the budget
+params["thinking"] = {"type": "enabled", "budget_tokens": 1024}  # 1024 is the minimum
+```
+
+- The reply: `thinking` (reasoning + `signature`), then `text`. `redacted_thinking` has only encrypted `data`.
+- Thinking tokens are billed as output: 232 → 381 tokens, 2.2 → 3.1 s on a one-paragraph answer.
+- Send thinking blocks back unchanged. The API checks the **signature** when Claude continues its own turn
+  (tool loop): an edited signature gives `400 Invalid signature`; edited text passes, because Claude 4 returns
+  a summary in `thinking` and the full reasoning is encrypted in the signature.
+- Blocks from earlier turns are dropped by the API, so a plain follow-up works with or without them.
+- The magic test string returns about 60 `redacted_thinking` blocks; they go back like normal ones.
+- **Through OpenRouter the limits are not enforced**: prefill silently turns thinking off (no thinking
+  block, no error); a budget below 1024 or `max_tokens` below the budget pass too. Check the blocks you get back.
+- Turn it on only after prompt work and evals stop improving accuracy.
+
 ## Results so far
 
 | Notebook | Prompt | Average score |
@@ -452,6 +478,8 @@ output moves the average by about 1 point.
   reaches the end (the course can add one more chunk made only of overlap sentences).
 - **`VectorIndex`** is the course class, shorter: no type checks on every number, `math.dist` and
   `math.hypot` for the distances. Same interface (`add_vector`, `add_document`, `search`).
+- **Extended thinking**: the course `chat` as is (with `stop_sequences=None`). Added: the cost comparison,
+  the signature check in a tool loop, and what OpenRouter does with prefill and thinking.
 - **`BM25Index`** is the course class, shorter (`Counter` for document frequencies, `idf()` public
   to show the weights). Same tokenizer, scores and `exp(-0.1 * score)` normalization.
 - **`VectorIndex.add_documents`** embeds all documents in one request (the course adds documents one
