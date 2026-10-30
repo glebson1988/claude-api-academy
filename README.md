@@ -88,6 +88,7 @@ The project: Claude sets reminders with three tools: current time, date arithmet
 | [`04_sending_tool_results`](./04_tool_use/04_sending_tool_results.ipynb) | Full round trip by hand: run the function, send `tool_result`, get the answer |
 | [`05_multi_turn_conversations_with_tools`](./04_tool_use/05_multi_turn_conversations_with_tools.ipynb) | "103 days from today": two tools in a row, rounds run one by one |
 | [`06_implementing_multiple_turns`](./04_tool_use/06_implementing_multiple_turns.ipynb) | The loop: `run_conversation`, `run_tools`, `run_tool`; parallel calls, a chain, an error and a retry |
+| [`07_using_multiple_tools`](./04_tool_use/07_using_multiple_tools.ipynb) | `set_reminder` as a third tool: four steps to add a tool, a chain of all three |
 
 Tool functions and schemas: [`tools.py`](./04_tool_use/tools.py).
 
@@ -285,6 +286,11 @@ def run_conversation(messages):
 - **`run_tool`**: name → function routing; a new tool is one more branch, the loop does not change.
 - **Good schema descriptions prevent errors**: asked for "fortnights", Claude read the list of units
   and called with 6 weeks instead.
+- **Adding a tool** = function + schema + entry in `tools` + branch in `run_tool`. Claude picks the
+  order: "in 2 weeks at 10am" ran `get_current_datetime` → `add_duration_to_datetime` → `set_reminder`.
+- **A tool that returns nothing** still needs a `tool_result`: `json.dumps(None)` is `"null"`.
+- **Check what Claude passes on**: it got "12:00:00 AM" (midnight) and set the reminder for
+  `T12:00:00` (noon). If one tool returned ISO like the next one expects, there would be no AM/PM to convert.
 
 ## Results so far
 
