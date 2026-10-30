@@ -28,9 +28,15 @@ class VectorIndex:
         self.documents.append(document)
 
     def add_document(self, document):
+        self.add_documents([document])
+
+    def add_documents(self, documents):
+        """Embed all documents in one request. embedding_fn(texts, input_type=...) returns one vector per text."""
         if not self._embedding_fn:
             raise ValueError("Embedding function not provided during initialization.")
-        self.add_vector(self._embedding_fn(document["content"]), document)
+        vectors = self._embedding_fn([document["content"] for document in documents], input_type="document")
+        for vector, document in zip(vectors, documents, strict=True):
+            self.add_vector(vector, document)
 
     def search(self, query, k=1):
         """Return the k closest documents as (document, distance) pairs, closest first."""
@@ -41,7 +47,7 @@ class VectorIndex:
         if isinstance(query, str):
             if not self._embedding_fn:
                 raise ValueError("Embedding function not provided for string query.")
-            query = self._embedding_fn(query)
+            query = self._embedding_fn(query, input_type="query")
         if len(query) != self._vector_dim:
             raise ValueError(f"Query vector dimension mismatch. Expected {self._vector_dim}, got {len(query)}")
 

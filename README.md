@@ -106,8 +106,10 @@ The document: the course's [`report.md`](./05_rag/report.md), an annual report o
 | [`01_text_chunking_strategies`](./05_rag/01_text_chunking_strategies.ipynb) | Chunking by size, sentence and section on one report; which chunks mix two sections |
 | [`02_text_embeddings`](./05_rag/02_text_embeddings.ipynb) | `generate_embedding` with Voyage through OpenRouter; a question scored against three sections |
 | [`03_implementing_the_rag_flow`](./05_rag/03_implementing_the_rag_flow.ipynb) | The five steps with `VectorIndex`, `query` vs `document` embeddings, plus Claude's answer from the found chunks |
+| [`04_bm25_lexical_search`](./05_rag/04_bm25_lexical_search.ipynb) | BM25: tokens and IDF weights, exact IDs vs plain words against vector search, stop words |
+| [`05_a_multi_index_rag_pipeline`](./05_rag/05_a_multi_index_rag_pipeline.ipynb) | `Retriever` with RRF over both indexes; where merging helps and where it buries the answer |
 
-Chunking: [`chunking.py`](./05_rag/chunking.py). Embeddings: [`embeddings.py`](./05_rag/embeddings.py). Vector store: [`vector_index.py`](./05_rag/vector_index.py).
+Chunking: [`chunking.py`](./05_rag/chunking.py). Embeddings: [`embeddings.py`](./05_rag/embeddings.py). Indexes: [`vector_index.py`](./05_rag/vector_index.py), [`bm25_index.py`](./05_rag/bm25_index.py). Hybrid search: [`retriever.py`](./05_rag/retriever.py).
 
 ## Cheat sheet
 
@@ -376,6 +378,32 @@ results = store.search(query, k=2)                                # 5. [(doc, di
   0.648, while with `"query"` the top three were within 0.02.
 - 2 chunks in the prompt: 731 input tokens instead of the whole report (about 4600).
 
+**BM25** (lexical search): matches words, not meaning. Rare terms weigh more (IDF), repeats help less
+and less (`k1`), long chunks are penalized (`b`). No API calls.
+
+**Hybrid search with RRF**: run both indexes, merge by rank, since their scores are on different scales.
+
+```python
+retriever = Retriever(BM25Index(), VectorIndex(embedding_fn=generate_embedding))
+retriever.add_documents([{"content": chunk} for chunk in chunks])
+retriever.search(question, k=3)        # RRF_score(doc) = sum of 1 / (k_rrf + rank), k_rrf = 60
+```
+
+Rank of the right section, 15 chunks:
+
+| Question | Vector | BM25 | RRF | RRF `k_rrf=1` |
+|---|---|---|---|---|
+| What happened with INC-2023-Q4-011? | 1 | 2 | 2 | 2 |
+| TIMEOUT_QUERY_DB_0xDEADBEEF | 1 | 1 | 1 | 1 |
+| What did the software engineering dept do last year? | 2 | 3 | 2 | 2 |
+| Which team stopped hackers from breaking in? | 1 | - | **13** | 3 |
+
+- `voyage-4-large` found the exact IDs by itself; the course shows semantic search missing them.
+- When one index has the answer and the other has nothing, RRF buries it: one first place gives
+  `1/61`, two mediocre places give more. Hybrid search is not automatically better; evaluate it on your questions.
+- BM25 matches common words (`with`, `the`), which adds noise; a tokenizer without stop words helps
+  where the words exist (software question: 3 → 2), not where they don't (hackers).
+
 ## Results so far
 
 | Notebook | Prompt | Average score |
@@ -424,6 +452,11 @@ output moves the average by about 1 point.
   reaches the end (the course can add one more chunk made only of overlap sentences).
 - **`VectorIndex`** is the course class, shorter: no type checks on every number, `math.dist` and
   `math.hypot` for the distances. Same interface (`add_vector`, `add_document`, `search`).
+- **`BM25Index`** is the course class, shorter (`Counter` for document frequencies, `idf()` public
+  to show the weights). Same tokenizer, scores and `exp(-0.1 * score)` normalization.
+- **`VectorIndex.add_documents`** embeds all documents in one request (the course adds documents one
+  by one, one request each); its `embedding_fn` gets `input_type`: `"document"` when adding, `"query"` when searching.
+- **`Retriever`** is the course logic; the lesson page only shows a skeleton, the code is from the course notebook.
 - **The RAG flow notebook** embeds chunks with `input_type="document"` (the course uses `"query"`
   for both) and adds step 6, Claude's answer from the found chunks, which this lesson leaves out.
 - **Embeddings** go through OpenRouter (`httpx` POST to `/v1/embeddings`, the key from `.env`) instead
