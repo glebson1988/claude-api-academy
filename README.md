@@ -17,6 +17,7 @@ cp .env.example .env         # then put your key into .env
 `.env` is git-ignored. Notebooks call `load_dotenv()`, which finds `.env` in the repo root
 from any module folder. `ANTHROPIC_BASE_URL` is optional: this repo runs through OpenRouter,
 which accepts the course model name `claude-haiku-4-5` as is.
+The RAG notebooks (module 5) need OpenRouter: embeddings come from its `/v1/embeddings` endpoint.
 
 ## Running
 
@@ -103,8 +104,9 @@ The document: the course's [`report.md`](./05_rag/report.md), an annual report o
 | Notebook | What it shows |
 |---|---|
 | [`01_text_chunking_strategies`](./05_rag/01_text_chunking_strategies.ipynb) | Chunking by size, sentence and section on one report; which chunks mix two sections |
+| [`02_text_embeddings`](./05_rag/02_text_embeddings.ipynb) | `generate_embedding` with Voyage through OpenRouter; a question scored against three sections |
 
-Chunking functions: [`chunking.py`](./05_rag/chunking.py).
+Chunking: [`chunking.py`](./05_rag/chunking.py). Embeddings: [`embeddings.py`](./05_rag/embeddings.py).
 
 ## Cheat sheet
 
@@ -340,6 +342,19 @@ def run_conversation(messages):
 - Section chunks are uneven (69 to 2187 characters); long sections can be split again by sentence or size.
 - Overlap must be smaller than the chunk, or the loop never moves on.
 
+**Embeddings**: text → a list of numbers that stands for its meaning (`voyage-4-large`: 1024 numbers).
+Anthropic has no embedding model; the course uses VoyageAI.
+
+```python
+generate_embedding("How many bugs did engineers fix?", input_type="query")   # one vector
+generate_embedding(chunks, input_type="document")                            # a list of vectors
+```
+
+- `input_type`: `"query"` for the question, `"document"` for the chunks; Voyage tunes the vectors for search.
+- **Cosine similarity** compares two vectors; Voyage vectors have length 1, so it is the dot product.
+- The question about bugs scored 0.333 against the software section and about 0.1 against the
+  medical and security ones, though none of them contains the word "bug". The ranking matters, not the value.
+
 ## Results so far
 
 | Notebook | Prompt | Average score |
@@ -386,6 +401,10 @@ output moves the average by about 1 point.
   splits on `\n## ` and drops it). Both overlap functions raise `ValueError` when the overlap is not
   smaller than the chunk (the course loops forever). `chunk_by_sentence` stops after the chunk that
   reaches the end (the course can add one more chunk made only of overlap sentences).
+- **Embeddings** go through OpenRouter (`httpx` POST to `/v1/embeddings`, the key from `.env`) instead
+  of the `voyageai` package and a separate `VOYAGE_API_KEY`. The model is `voyage-4-large`
+  (`voyage-3-large` is not on OpenRouter). `generate_embedding` takes a text or a list already;
+  the course adds the list form in the next lesson.
 - **Each module 3 notebook writes its own report** (`output_02.json`, `output_02.html`, ...).
 
 ## Credits
