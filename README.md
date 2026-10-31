@@ -122,6 +122,7 @@ Chunking: [`chunking.py`](./05_rag/chunking.py). Embeddings: [`embeddings.py`](.
 | [`03_pdf_support`](./06_features_of_claude/03_pdf_support.ipynb) | A base64 PDF document block, a one-sentence summary of the course's `earth.pdf`, and token usage through OpenRouter |
 | [`04_citations`](./06_features_of_claude/04_citations.ipynb) | PDF and plain text citation requests, metadata checks, and the absence of structured citations on the tested OpenRouter Haiku and Sonnet routes |
 | [`05_prompt_caching`](./06_features_of_claude/05_prompt_caching.ipynb) | Cache rules and explicit tool/system breakpoints: writes, reads, partial reuse, invalidation, and measured usage through OpenRouter |
+| [`06_code_execution_and_files_api`](./06_features_of_claude/06_code_execution_and_files_api.ipynb) | Files API upload, native execution probe, OpenRouter hosted shell adaptation, downloaded churn metrics and SVG plot, and independent checks |
 
 ## Cheat sheet
 
@@ -496,6 +497,19 @@ system_blocks = [{"type": "text", "text": system_prompt,
   hits from elapsed time. The experiment checks a short prefix, initial writes, repeat reads,
   a tool-prefix hit after a system change, and invalidation after a first-tool change.
 - The original tool schemas stay unchanged. Tools are supplied for caching, with execution disabled.
+
+### Code execution and the Files API
+
+- Upload inputs with `client.beta.files.upload`; the returned file ID references provider-side storage.
+- The tested OpenRouter endpoint accepts Files API uploads but rejects the native
+  `code_execution_20250825` and older `20250522` tool types with `Unknown server-tool shorthand`.
+- The practical notebook uses `openrouter:shell` with `engine="openrouter"` and attaches the uploaded
+  CSV through `parameters.environment.file_ids`. This is a provider adaptation; generated code runs
+  in its remote sandbox. The native lesson uses `container_upload` instead.
+- Actual server results supply container file IDs. Promote the generated JSON and SVG into Files API
+  storage, download them, and delete only workspace files created by the run. Local outputs are kept
+  in `06_features_of_claude/code_execution_output/`; container copies retain the provider's lifetime.
+- Validate server-generated metrics against the local CSV. Churn associations do not establish causation.
 
 ## Results so far
 

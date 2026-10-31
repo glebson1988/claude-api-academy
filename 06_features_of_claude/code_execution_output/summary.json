@@ -1,0 +1,69 @@
+{
+  "rows": 500,
+  "churned": 193,
+  "churn_rate": 0.386,
+  "by_subscription_tier": [
+    {
+      "group": "Basic",
+      "rows": 207,
+      "churned": 90,
+      "churn_rate": 0.43478260869565216
+    },
+    {
+      "group": "Premium",
+      "rows": 83,
+      "churned": 20,
+      "churn_rate": 0.24096385542168675
+    },
+    {
+      "group": "Standard",
+      "rows": 210,
+      "churned": 83,
+      "churn_rate": 0.3952380952380952
+    }
+  ],
+  "by_support_interactions": [
+    {
+      "group": "0",
+      "rows": 8,
+      "churned": 0,
+      "churn_rate": 0.0
+    },
+    {
+      "group": "1",
+      "rows": 66,
+      "churned": 18,
+      "churn_rate": 0.2727272727272727
+    },
+    {
+      "group": "2",
+      "rows": 137,
+      "churned": 34,
+      "churn_rate": 0.24817518248175183
+    },
+    {
+      "group": "3",
+      "rows": 162,
+      "churned": 66,
+      "churn_rate": 0.4074074074074074
+    },
+    {
+      "group": "4",
+      "rows": 90,
+      "churned": 51,
+      "churn_rate": 0.5666666666666667
+    },
+    {
+      "group": "5",
+      "rows": 29,
+      "churned": 18,
+      "churn_rate": 0.6206896551724138
+    },
+    {
+      "group": "6",
+      "rows": 8,
+      "churned": 6,
+      "churn_rate": 0.75
+    }
+  ]
+}

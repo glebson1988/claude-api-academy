@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="600">
+<rect width="1000" height="600" fill="white"/>
+<text x="270.0" y="60" text-anchor="middle" font-size="16" font-weight="bold">Churn Rate by Subscription Tier</text>
+<rect x="113.33333333333334" y="294.7826086956522" width="60" height="165.2173913043478" fill="steelblue" stroke="black" stroke-width="1"/>
+<text x="143.33333333333334" y="289.7826086956522" text-anchor="middle" font-size="12" font-weight="bold">43.5%</text>
+<text x="143.33333333333334" y="480" text-anchor="middle" font-size="12">Basic</text>
+<rect x="240.0" y="368.433734939759" width="60" height="91.56626506024097" fill="steelblue" stroke="black" stroke-width="1"/>
+<text x="270.0" y="363.433734939759" text-anchor="middle" font-size="12" font-weight="bold">24.1%</text>
+<text x="270.0" y="480" text-anchor="middle" font-size="12">Premium</text>
+<rect x="366.6666666666667" y="309.8095238095238" width="60" height="150.1904761904762" fill="steelblue" stroke="black" stroke-width="1"/>
+<text x="396.6666666666667" y="304.8095238095238" text-anchor="middle" font-size="12" font-weight="bold">39.5%</text>
+<text x="396.6666666666667" y="480" text-anchor="middle" font-size="12">Standard</text>
+<line x1="80" y1="80" x2="80" y2="460" stroke="black" stroke-width="2"/>
+<line x1="80" y1="460" x2="460.0" y2="460" stroke="black" stroke-width="2"/>
+<text x="70" y="80" text-anchor="end" font-size="10">100%</text>
+<text x="70" y="460" text-anchor="end" font-size="10">0%</text>
+<text x="25" y="270.0" text-anchor="middle" font-size="12" transform="rotate(-90, 25, 270.0)">Churn Rate (%)</text>
+<text x="730.0" y="60" text-anchor="middle" font-size="16" font-weight="bold">Churn Rate by Support Interactions</text>
+<rect x="552.063492063492" y="460.0" width="30.158730158730158" height="0.0" fill="coral" stroke="black" stroke-width="1"/>
+<text x="567.1428571428571" y="455.0" text-anchor="middle" font-size="12" font-weight="bold">0.0%</text>
+<text x="567.1428571428571" y="480" text-anchor="middle" font-size="12">0</text>
+<rect x="606.3492063492064" y="356.3636363636364" width="30.158730158730158" height="103.63636363636363" fill="coral" stroke="black" stroke-width="1"/>
+<text x="621.4285714285714" y="351.3636363636364" text-anchor="middle" font-size="12" font-weight="bold">27.3%</text>
+<text x="621.4285714285714" y="480" text-anchor="middle" font-size="12">1</text>
+<rect x="660.6349206349207" y="365.6934306569343" width="30.158730158730158" height="94.30656934306569" fill="coral" stroke="black" stroke-width="1"/>
+<text x="675.7142857142858" y="360.6934306569343" text-anchor="middle" font-size="12" font-weight="bold">24.8%</text>
+<text x="675.7142857142858" y="480" text-anchor="middle" font-size="12">2</text>
+<rect x="714.9206349206349" y="305.1851851851852" width="30.158730158730158" height="154.8148148148148" fill="coral" stroke="black" stroke-width="1"/>
+<text x="730.0" y="300.1851851851852" text-anchor="middle" font-size="12" font-weight="bold">40.7%</text>
+<text x="730.0" y="480" text-anchor="middle" font-size="12">3</text>
+<rect x="769.2063492063492" y="244.66666666666669" width="30.158730158730158" height="215.33333333333331" fill="coral" stroke="black" stroke-width="1"/>
+<text x="784.2857142857142" y="239.66666666666669" text-anchor="middle" font-size="12" font-weight="bold">56.7%</text>
+<text x="784.2857142857142" y="480" text-anchor="middle" font-size="12">4</text>
+<rect x="823.4920634920635" y="224.13793103448276" width="30.158730158730158" height="235.86206896551724" fill="coral" stroke="black" stroke-width="1"/>
+<text x="838.5714285714286" y="219.13793103448276" text-anchor="middle" font-size="12" font-weight="bold">62.1%</text>
+<text x="838.5714285714286" y="480" text-anchor="middle" font-size="12">5</text>
+<rect x="877.7777777777778" y="175.0" width="30.158730158730158" height="285.0" fill="coral" stroke="black" stroke-width="1"/>
+<text x="892.8571428571429" y="170.0" text-anchor="middle" font-size="12" font-weight="bold">75.0%</text>
+<text x="892.8571428571429" y="480" text-anchor="middle" font-size="12">6</text>
+<line x1="540.0" y1="80" x2="540.0" y2="460" stroke="black" stroke-width="2"/>
+<line x1="540.0" y1="460" x2="920.0" y2="460" stroke="black" stroke-width="2"/>
+<text x="530.0" y="80" text-anchor="end" font-size="10">100%</text>
+<text x="530.0" y="460" text-anchor="end" font-size="10">0%</text>
+<text x="485.0" y="270.0" text-anchor="middle" font-size="12" transform="rotate(-90, 485.0, 270.0)">Churn Rate (%)</text>
+</svg>
