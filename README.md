@@ -121,6 +121,7 @@ Chunking: [`chunking.py`](./05_rag/chunking.py). Embeddings: [`embeddings.py`](.
 | [`02_image_support`](./06_features_of_claude/02_image_support.ipynb) | Image blocks, what an image costs in tokens, fire risk from satellite images: bare question vs step-by-step prompt |
 | [`03_pdf_support`](./06_features_of_claude/03_pdf_support.ipynb) | A base64 PDF document block, a one-sentence summary of the course's `earth.pdf`, and token usage through OpenRouter |
 | [`04_citations`](./06_features_of_claude/04_citations.ipynb) | PDF and plain text citation requests, metadata checks, and the absence of structured citations on the tested OpenRouter Haiku and Sonnet routes |
+| [`05_prompt_caching`](./06_features_of_claude/05_prompt_caching.ipynb) | Cache rules and explicit tool/system breakpoints: writes, reads, partial reuse, invalidation, and measured usage through OpenRouter |
 
 ## Cheat sheet
 
@@ -475,6 +476,26 @@ for block in response.content:
 - OpenRouter tests with Haiku 4.5 and Sonnet 4.5 returned answers without structured citations for both formats.
   Raw HTTP JSON also contained an empty citation list for a plain text request. Native citation support
   was not confirmed; the notebook reports this explicitly and validates metadata when citations exist.
+
+### Prompt caching
+
+```python
+tools_clone = tools.copy()
+tools_clone[-1] = {**tools_clone[-1], "cache_control": {"type": "ephemeral"}}
+system_blocks = [{"type": "text", "text": system_prompt,
+                  "cache_control": {"type": "ephemeral"}}]
+```
+
+- Prefix order is tools → system → messages; content through each breakpoint must match.
+  Changing the question after the cached system prefix can still reuse that prefix.
+- Default TTL is 5 minutes, refreshed on hits; `ttl="1h"` costs more to write.
+  Up to four explicit breakpoints are allowed. Short prefixes do not establish cache entries.
+- The notebook uses Sonnet 4.5 (1024-token minimum) so the existing reminder schemas qualify
+  on their own; Haiku 4.5 needs 4096 tokens. The long system context is module 5's report.
+- Inspect `cache_creation_input_tokens` and `cache_read_input_tokens`, rather than inferring
+  hits from elapsed time. The experiment checks a short prefix, initial writes, repeat reads,
+  a tool-prefix hit after a system change, and invalidation after a first-tool change.
+- The original tool schemas stay unchanged. Tools are supplied for caching, with execution disabled.
 
 ## Results so far
 
