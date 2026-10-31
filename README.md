@@ -124,6 +124,24 @@ Chunking: [`chunking.py`](./05_rag/chunking.py). Embeddings: [`embeddings.py`](.
 | [`05_prompt_caching`](./06_features_of_claude/05_prompt_caching.ipynb) | Cache rules and explicit tool/system breakpoints: writes, reads, partial reuse, invalidation, and measured usage through OpenRouter |
 | [`06_code_execution_and_files_api`](./06_features_of_claude/06_code_execution_and_files_api.ipynb) | Files API upload, native execution probe, OpenRouter hosted shell adaptation, downloaded churn metrics and SVG plot, and independent checks |
 
+### Module 7: Model Context Protocol
+
+📁 [`07_model_context_protocol/`](./07_model_context_protocol/)
+
+| Notebook | What it shows |
+|---|---|
+| [`01_project_setup`](./07_model_context_protocol/01_project_setup.ipynb) | Verified chat without document tools, followed by a separate smoke check of the completed local MCP backend and a real model-to-tool round trip |
+
+Shared application: [`mcp_client.py`](./07_model_context_protocol/mcp_client.py),
+[`mcp_server.py`](./07_model_context_protocol/mcp_server.py), and [`core/`](./07_model_context_protocol/core/).
+The server stores six sample documents in memory. The backend already implements tools, resources and
+prompts; sampling, notifications and roots are also included, but are not exercised in the setup notebook.
+The later lessons will explain these components. The baseline deliberately connects no MCP clients.
+
+Open in a browser with `uv run --with notebook jupyter notebook 07_model_context_protocol/01_project_setup.ipynb`.
+For the optional terminal interface, run `uv run 07_model_context_protocol/main.py` from the course root.
+Both reuse the root `.env`; `CLAUDE_MODEL` is optional and defaults to `claude-haiku-4-5`.
+
 ## Cheat sheet
 
 ### Requests
@@ -510,6 +528,17 @@ system_blocks = [{"type": "text", "text": system_prompt,
   storage, download them, and delete only workspace files created by the run. Local outputs are kept
   in `06_features_of_claude/code_execution_output/`; container copies retain the provider's lifetime.
 - Validate server-generated metrics against the local CSV. Churn associations do not establish causation.
+
+### MCP project setup
+
+- The model API and MCP are separate connections. The notebook uses the configured model provider
+  and starts a local stdio document server with `sys.executable` and an absolute script path.
+- In Jupyter, use top-level `await`, and open/close an MCP client in the same async task.
+  The notebook calls `Chat.run` directly; the terminal prompt loop is optional.
+- An empty client mapping sends no document tools. For a grounded answer, verify an actual `tool_use`
+  and its result, rather than relying on the model saying it read a document.
+- The smoke check reads and edits the in-memory sample, restores the edit, retrieves resources and
+  a prompt, and asks the model to use the document tool. No filesystem roots are granted.
 
 ## Results so far
 

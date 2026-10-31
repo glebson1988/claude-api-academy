@@ -5,6 +5,8 @@ requires-python = ">=3.15"
 dependencies = [
     "anthropic<1",
     "httpx>=0.28.1",
+    "mcp[cli]>=1.30.0,<2",
+    "prompt-toolkit>=3.0.51",
     "python-dotenv>=1.2.4",
 ]
 
