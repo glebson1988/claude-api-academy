@@ -119,6 +119,7 @@ Chunking: [`chunking.py`](./05_rag/chunking.py). Embeddings: [`embeddings.py`](.
 |---|---|
 | [`01_extended_thinking`](./06_features_of_claude/01_extended_thinking.ipynb) | `thinking` + `text` blocks, cost, where the signature is checked, redacted thinking, limits through OpenRouter |
 | [`02_image_support`](./06_features_of_claude/02_image_support.ipynb) | Image blocks, what an image costs in tokens, fire risk from satellite images: bare question vs step-by-step prompt |
+| [`03_pdf_support`](./06_features_of_claude/03_pdf_support.ipynb) | A base64 PDF document block, a one-sentence summary of the course's `earth.pdf`, and token usage through OpenRouter |
 
 ## Cheat sheet
 
@@ -445,6 +446,17 @@ params["thinking"] = {"type": "enabled", "budget_tokens": 1024}  # 1024 is the m
 - Fire risk, 7 images x 3 runs: the bare question gave the same rating every run on 5 of 7, but it said 3
   in 18 of 21 answers. The step-by-step course prompt used the whole scale (4 for the two most overgrown
   homes, every run) and wavered on the borderline ones. Stable is not the same as right: label images and run an eval.
+
+### PDFs
+
+```python
+{"type": "document", "source": {"type": "base64", "media_type": "application/pdf",
+                                "data": base64.standard_b64encode(path.read_bytes()).decode()}}
+```
+
+- Send the document block and the text question in the same user message, as with images.
+- Base64 encodes the PDF for transport; no local text extraction is needed.
+- The notebook checks this format through OpenRouter with the course's `earth.pdf` and prints token usage.
 
 ## Results so far
 

@@ -2,6 +2,7 @@
 __pycache__/
 .ruff_cache/
 .ipynb_checkpoints/
+AGENTS.md
 
 # Eval reports are regenerated on every run
 output*.json
