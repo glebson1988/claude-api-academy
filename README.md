@@ -120,6 +120,7 @@ Chunking: [`chunking.py`](./05_rag/chunking.py). Embeddings: [`embeddings.py`](.
 | [`01_extended_thinking`](./06_features_of_claude/01_extended_thinking.ipynb) | `thinking` + `text` blocks, cost, where the signature is checked, redacted thinking, limits through OpenRouter |
 | [`02_image_support`](./06_features_of_claude/02_image_support.ipynb) | Image blocks, what an image costs in tokens, fire risk from satellite images: bare question vs step-by-step prompt |
 | [`03_pdf_support`](./06_features_of_claude/03_pdf_support.ipynb) | A base64 PDF document block, a one-sentence summary of the course's `earth.pdf`, and token usage through OpenRouter |
+| [`04_citations`](./06_features_of_claude/04_citations.ipynb) | PDF and plain text citation requests, metadata checks, and the absence of structured citations on the tested OpenRouter Haiku and Sonnet routes |
 
 ## Cheat sheet
 
@@ -457,6 +458,23 @@ params["thinking"] = {"type": "enabled", "budget_tokens": 1024}  # 1024 is the m
 - Send the document block and the text question in the same user message, as with images.
 - Base64 encodes the PDF for transport; no local text extraction is needed.
 - The notebook checks this format through OpenRouter with the course's `earth.pdf` and prints token usage.
+
+### Citations
+
+```python
+document["title"] = "earth.pdf"
+document["citations"] = {"enabled": True}
+for block in response.content:
+    if block.type == "text":
+        print(block.text, block.citations)
+```
+
+- Citations belong to individual text blocks; joining only `.text` discards them.
+- PDF citations use 1-based page ranges; plain text citations use 0-based character ranges.
+  Both end positions are exclusive; `document_index` starts at 0.
+- OpenRouter tests with Haiku 4.5 and Sonnet 4.5 returned answers without structured citations for both formats.
+  Raw HTTP JSON also contained an empty citation list for a plain text request. Native citation support
+  was not confirmed; the notebook reports this explicitly and validates metadata when citations exist.
 
 ## Results so far
 
